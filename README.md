@@ -8,13 +8,18 @@ Likeable is the easiest way to allow your models to be liked by users, just drop
 ```ruby
 
     class Comment
-      attr_accessor :id
+      include Likeable
+
+      # ...
+    end
+
+    class User
+      include Likeable::UserMethods
 
       # ...
     end
 
     Likeable.setup do |likeable|
-      likeable.classes = [Comment]
       likeable.redis   = Redis.new
     end
 
@@ -38,12 +43,30 @@ Gemfile:
 
     gem 'Likeable'
 
-Next set up your Redis connection and specify models to like in initializers/likeable.rb:
+Next set up your Redis connection in initializers/likeable.rb:
 
 ```ruby
+
     Likeable.setup do |likeable|
-      likeable.classes = [Comment, Spot]
-      likeable.redis   = Redis.new
+      likeable.redis  = Redis.new
+    end
+```
+
+Then add the `Likeable::UserMethods` module to models/user.rb:
+
+```ruby
+
+    class User
+      include Likeable::UserMethods
+    end
+```
+
+Finally add `Likeable` module to any model you want to be liked:
+
+```ruby
+
+    class Comment
+      include Likeable
     end
 ```
 

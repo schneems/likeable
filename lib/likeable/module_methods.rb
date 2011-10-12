@@ -9,7 +9,7 @@ module Likeable
   # ------------------ #
   class << self
     def classes
-      @classes||[]
+      (@classes||[]).flatten
     end
 
     def classes=(*args)
@@ -46,6 +46,10 @@ module Likeable
         self.model(resource_name)
       end
 
+      def get_resource_name_for_class(klass)
+        klass
+      end
+
       def redis
         @redis ||= Redis.new
       end
@@ -58,6 +62,10 @@ module Likeable
         @after_like = block if block.present?
         @after_like ||= lambda {}
         @after_like
+      end
+
+      def find_many=(find_many)
+        @find_many = find_many
       end
 
       def find_many(klass, ids)
@@ -91,14 +99,28 @@ module Likeable
       #  like.classes   = Spot, Comment
       # end
 
+
+      def include_in_class(klass, include_item)
+        case
+        when defined?(Rails::Application)
+          Rails::Application.class_eval do
+            config.to_prepare do
+              klass.send :include, include_item
+            end
+          end
+        else
+          klass.send :include, include_item
+        end
+      end
+
       def make_classes_likeable
         classes.each do |klass|
-          klass.send :include, Likeable
+          include_in_class(klass, Likeable)
         end
       end
 
       def give_users_like_ability
-        user_class.send :include, ::Likeable::UserMethods
+        include_in_class user_class, ::Likeable::UserMethods
       end
 
       def setup(&block)
