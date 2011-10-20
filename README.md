@@ -34,6 +34,10 @@ Likeable is the easiest way to allow your models to be liked by users, just drop
     comment.liked_by?(current_user)     # => true
 
     current_user.all_liked(Comment)     # => [#<Comment ...>, ...]
+
+    liked_comment = Likeable.find_by_resource_id("Comment", 15)
+    liked_comment == comment            # => true
+
 ```
 
 
@@ -96,6 +100,10 @@ Thats about it.
                            RedisR
                             Redi
                              Re
+Authors
+=======
+[Richard Schneeman](http://schneems.com) for [Gowalla](http://gowalla.com) <3
+
 
 Contribution
 ============
