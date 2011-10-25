@@ -45,7 +45,7 @@ Setup
 =======
 Gemfile:
 
-    gem 'Likeable'
+    gem 'likeable'
 
 Next set up your Redis connection in initializers/likeable.rb:
 
