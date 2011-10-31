@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "likeable"
-  s.version = "0.0.3"
+  s.version = "0.0.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Schneems"]
-  s.date = "2011-10-14"
+  s.date = "2011-10-31"
   s.description = "\n    Likeable allows you to make your models...well...likeable using redis.\n  "
   s.email = "richard.schneeman@gmail.com"
   s.extra_rdoc_files = [
@@ -18,7 +18,6 @@ Gem::Specification.new do |s|
   s.files = [
     ".autotest",
     ".rspec",
-    ".rvmrc",
     "Gemfile",
     "README.md",
     "Rakefile",
