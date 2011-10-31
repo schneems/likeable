@@ -60,7 +60,7 @@ module Likeable
 
       def after_like(&block)
         @after_like = block if block.present?
-        @after_like ||= lambda {}
+        @after_like ||= lambda {|like|}
         @after_like
       end
 
