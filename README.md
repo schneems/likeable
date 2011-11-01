@@ -74,6 +74,67 @@ Finally add `Likeable` module to any model you want to be liked:
     end
 ```
 
+## Rails Info
+If you're using Likeable in Rails this should help you get started
+
+ controllers/likes_controller.rb
+
+```ruby
+
+  class LikesController < ApplicationController
+
+    def create
+      target = Likeable.find_by_resource_id(params[:resource_name], params[:resource_id])
+      current_user.like!(target)
+      redirect_to :back, :notice => 'success'
+    end
+
+    def destroy
+      target = Likeable.find_by_resource_id(params[:resource_name], params[:resource_id])
+      current_user.unlike!(target)
+      redirect_to :back, :notice => 'success'
+    end
+  end
+
+```
+
+config/routes.rb
+
+```ruby
+
+    delete  'likes/:resource_name/:resource_id' => "likes#destroy", :as => 'like'
+    post    'likes/:resource_name/:resource_id' => "likes#create",  :as => 'like'
+
+```
+
+helpers/like_helper.rb
+
+```ruby
+
+  def like_link_for(target)
+    link_to "like it!!", like_path(:resource_name => target  .class, :resource_id => target.id), :method => :post
+    end
+
+    def unlike_link_for(target)
+      link_to "unlike it!!", like_path(:resource_name => target.class, :resource_id => target.id), :method => :delete
+    end
+
+```
+
+Then in any view you can simply call the helper methods to give your user a link
+
+```ruby
+
+    <%- if @user.likes? @comment -%>
+      <%= unlike_link_for @comment  %>
+    <%- else -%>
+      <%= like_link_for @comment %>
+    <%- end -%>
+
+
+```
+
+
 
 Thats about it.
 
