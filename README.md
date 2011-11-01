@@ -40,6 +40,11 @@ Likeable is the easiest way to allow your models to be liked by users, just drop
 
 ```
 
+## Screencast
+
+You can view a [screencast of likeable in action on youtube](http://youtu.be/nINGHWqPz3I?hd=1)
+
+
 
 Setup
 =======
