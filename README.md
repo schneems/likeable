@@ -42,7 +42,7 @@ Likeable is the easiest way to allow your models to be liked by users, just drop
 
 ## Screencast
 
-You can view a [screencast of likeable in action on youtube](http://youtu.be/iJoMXUQ33Jw?hd=1)
+You can view a [screencast of likeable in action on youtube](http://youtu.be/iJoMXUQ33Jw?hd=1). There is also an example [Likeable rails application](https://github.com/schneems/likeable_example) that you can use to follow along.
 
 
 
