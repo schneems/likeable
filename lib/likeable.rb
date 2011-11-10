@@ -9,16 +9,22 @@ module Likeable
     include Keytar
     include Likeable::Facepile
     define_key :like, :key_case => nil
+    define_key :unlike, :key_case => nil
 
     if self.respond_to?(:after_destroy)
       after_destroy :destroy_all_likes
+      after_destroy :destroy_all_unlikes
     else
-      warn "#{self} doesn't support after_destroy callback, likes will not be cleared automatically when object is destroyed"
+      warn "#{self} doesn't support after_destroy callback, likes and/or unlikes will not be cleared automatically when object is destroyed"
     end
   end
 
   def destroy_all_likes
     liked_users.each {|user| self.remove_like_from(user) }
+  end
+
+  def destroy_all_unlikes
+    unliked_users.each {|user| self.remove_unlike_from(user) }
   end
 
   # create a like
@@ -32,6 +38,17 @@ module Likeable
     like
   end
 
+  # create an unlike
+  # the user who created the unlike has a reference to the object unliked
+  def add_unlike_from(user, time = Time.now.to_f)
+    Likeable.redis.hset(unlike_key, user.id, time)
+    Likeable.redis.hset(user.unlike_key(self.class.to_s.downcase), self.id, time)
+    unlike = Unlike.new(:target => self, :user => user, :time => time)
+    after_unlike(unlike)
+    clear_memoized_methods(:unlike_count, :unlike_user_ids, :unliked_user_ids, :unliked_users, :unlikes)
+    unlike
+  end
+
   def clear_memoized_methods(*methods)
     methods.each do |method|
       eval("@#{method} = nil")
@@ -42,6 +59,10 @@ module Likeable
     Likeable.after_like.call(like)
   end
 
+  def after_unlike(unlike)
+    Likeable.after_unlike.call(unlike)
+  end
+
   # removes a like
   def remove_like_from(user)
     Likeable.redis.hdel(like_key, user.id)
@@ -49,8 +70,23 @@ module Likeable
     clear_memoized_methods(:like_count, :like_user_ids, :liked_user_ids, :liked_users)
   end
 
+  # removes an unlike
+  def remove_unlike_from(user)
+    Likeable.redis.hdel(unlike_key, user.id)
+    Likeable.redis.hdel(user.unlike_key(self.class.to_s.downcase), self.id)
+    clear_memoized_methods(:unlike_count, :unlike_user_ids, :unliked_user_ids, :unliked_users)
+  end
+
   def like_count
     @like_count ||= @like_user_ids.try(:count) || @likes.try(:count) || Likeable.redis.hlen(like_key)
+  end
+
+  def unlike_count
+    @unlike_count ||= @unlike_user_ids.try(:count) || @unlikes.try(:count) || Likeable.redis.hlen(unlike_key)
+  end
+
+  def plusminus
+    like_count - unlike_count
   end
 
   # get all user ids that have liked a target object
@@ -58,8 +94,16 @@ module Likeable
     @like_user_ids ||= (Likeable.redis.hkeys(like_key)||[]).map(&:to_i)
   end
 
+  def unlike_user_ids
+    @unlike_user_ids ||= (Likeable.redis.hkeys(unlike_key)||[]).map(&:to_i)
+  end
+
   def liked_users(limit = nil)
     @liked_users ||= User.where(:id => like_user_ids)
+  end
+
+  def unliked_users(limit = nil)
+    @unliked_users ||= User.where(:id => unlike_user_ids)
   end
 
   def likes
@@ -70,11 +114,25 @@ module Likeable
     end
   end
 
+  def unlikes
+    @unlikes ||= begin
+      Likeable.redis.hgetall(unlike_key).collect do |user_id, time|
+        Unlike.new(:user_id => user_id, :time => time, :target => self)
+      end
+    end
+  end
+
   # did given user like the object
   def liked_by?(user)
     return false unless user
     liked_by =    @like_user_ids.include?(user.id) if @like_user_ids
     liked_by ||=  Likeable.redis.hexists(like_key, user.id)
+  end
+
+  def unliked_by?(user)
+    return false unless user
+    unliked_by =    @unlike_user_ids.include?(user.id) if @unlike_user_ids
+    unliked_by ||=  Likeable.redis.hexists(unlike_key, user.id)
   end
 
 
@@ -94,8 +152,18 @@ module Likeable
       ids = (Likeable.redis.hkeys(key)||[]).map(&:to_i)
     end
 
+    def all_unliked_ids_by(user)
+      key = user.unlike_key(self.to_s.downcase)
+      ids = (Likeable.redis.hkeys(key)||[]).map(&:to_i)
+    end
+
     def all_liked_by(user)
       ids = all_liked_ids_by(user)
+      self.where(:id => ids)
+    end
+    
+    def all_unliked_by(user)
+      ids = all_unliked_ids_by(user)
       self.where(:id => ids)
     end
 
@@ -106,10 +174,19 @@ module Likeable
         end
       end
     end
+    
+    def after_unlike(*methods)
+      define_method(:after_unlike) do |unlike|
+        methods.each do |method|
+          eval("#{method}(unlike)")
+        end
+      end
+    end
   end
 end
 
 require 'likeable/like'
+require 'likeable/unlike'
 require 'likeable/facepile'
 require 'likeable/user_methods'
 require 'likeable/module_methods'

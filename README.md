@@ -39,6 +39,45 @@ Likeable is the easiest way to allow your models to be liked by users, just drop
     liked_comment == comment            # => true
 
 ```
+And it also allow your models to be unliked by users:
+
+```ruby
+    comment = Comment.find(15)
+    comment.unlike_count                  # => 0
+    current_user.unlike!(comment)         # => #<Likeable::Like ... >
+    comment.unlike_count                  # => 1
+    comment.unlikes                       # => [#<Likeable::Unlike ... >]
+    comment.unlikes.last.user             # => #<User ... >
+    comment.unlikes.last.created_at       # => Thu Nov 10 06:16:14 +0200 2011
+
+    comment.unliked_by?(current_user)     # => true
+
+    current_user.all_unliked(Comment)     # => [#<Comment ...>, ...]
+
+
+    # Notice `plusminus` method
+    comment = Comment.find(15)
+    comment.plusminus                     # => 0
+
+    current_user.unlike!(comment)
+    comment.plusminus                     # => -1
+    comment.unliked_by?(current_user)     # => true
+
+    current_user.like!(comment)
+    comment.plusminus                     # => 1
+    comment.liked_by?(current_user)       # => true
+
+    current_user_2.like!(comment)
+    comment.plusminus                     # => 2
+    comment.liked_by?(current_user_2)     # => true
+
+    # Notice `cancel_like!` method
+    current_user.cancel_like!(comment)
+    comment.plusminus                     # => 1
+    comment.liked_by?(current_user)       # => false
+    comment.unliked_by?(current_user)     # => false
+
+```
 
 ## Screencast
 
