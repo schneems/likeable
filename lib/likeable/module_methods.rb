@@ -91,9 +91,9 @@ module Likeable
         end
       end
 
-      def user_class=(user)
-        raise "User must be a class #{user.inspect}" unless user.class == Class
-        @user_class = user
+      def user_class=(klass)
+        raise ArgumentError, "Argument must be a class" unless klass.is_a?(Class)
+        @user_class = klass
       end
 
       # Likeable.setup do |like|
