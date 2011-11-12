@@ -84,7 +84,11 @@ module Likeable
       end
 
       def user_class
-        @user_class ||= ::User
+        begin
+          @user_class ||= ::User
+        rescue NameError
+          nil
+        end
       end
 
       def user_class=(user)
@@ -120,7 +124,7 @@ module Likeable
       end
 
       def give_users_like_ability
-        include_in_class user_class, ::Likeable::UserMethods
+        include_in_class user_class, ::Likeable::UserMethods if user_class
       end
 
       def setup(&block)
