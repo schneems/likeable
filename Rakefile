@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'bundler'
 begin
-  Bundler.setup(:default, :development)
+  Bundler.setup(:default, :development, :test)
 rescue Bundler::BundlerError => e
   $stderr.puts e.message
   $stderr.puts "Run `bundle install` to install missing gems"
@@ -24,3 +24,6 @@ Jeweler::Tasks.new do |gem|
   gem.add_development_dependency "rspec"
 end
 Jeweler::RubygemsDotOrgTasks.new
+
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new(:spec)

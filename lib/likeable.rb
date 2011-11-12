@@ -59,7 +59,7 @@ module Likeable
   end
 
   def liked_users(limit = nil)
-    @liked_users ||= User.where(:id => like_user_ids)
+    @liked_users ||= Likeable.user_class.where(:id => like_user_ids)
   end
 
   def likes
