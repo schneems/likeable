@@ -9,12 +9,12 @@ describe Likeable::Like do
       like.user.should        eq(@user)
       like.target.should      eq(@target)
       # Times often fail equality checks due to microsec precision
-      like.created_at.should  be_close(@time, 1)
+      like.created_at.should  be_within(1).of(@time)
     end
 
     it 'converts float time to propper Time object' do
       like = Likeable::Like.new(:time => @time.to_f)
-      like.created_at.should be_close(@time, 1)
+      like.created_at.should be_within(1).of(@time)
     end
   end
 end
