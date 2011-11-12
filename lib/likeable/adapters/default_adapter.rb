@@ -2,7 +2,7 @@ module Likeable
   module DefaultAdapter
     def self.find_one
       lambda { |klass, id|
-        klass.where(:id => id)
+        klass.where(:id => id).first
       }
     end
 
