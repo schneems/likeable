@@ -8,12 +8,13 @@ describe Likeable::Like do
       like = Likeable::Like.new(:target => @target, :user => @user, :time => @time)
       like.user.should        eq(@user)
       like.target.should      eq(@target)
-      like.created_at.should  eq(@time)
+      # Times often fail equality checks due to microsec precision
+      like.created_at.should  be_close(@time, 1)
     end
 
     it 'converts float time to propper Time object' do
       like = Likeable::Like.new(:time => @time.to_f)
-      like.created_at.should eq(@time)
+      like.created_at.should be_close(@time, 1)
     end
   end
 end
