@@ -64,18 +64,22 @@ module Likeable
         @after_like
       end
 
+      def adapter=(adapter)
+        self.find_one  = adapter.find_one
+        self.find_many = adapter.find_many
+      end
+
       def find_many=(find_many)
         @find_many = find_many
       end
 
       def find_many(klass, ids)
-        @find_many ||= lambda {|klass, ids| klass.where(:id => ids)}
+        @find_many ||= DefaultAdapter.find_many
         @find_many.call(klass, ids)
       end
 
-
       def find_one(klass, id)
-        @find_one ||= lambda {|klass, ids| klass.where(:id => id).first}
+        @find_one ||= DefaultAdapter.find_one
         @find_one.call(klass, id)
       end
 
