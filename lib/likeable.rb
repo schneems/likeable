@@ -54,11 +54,11 @@ module Likeable
 
   # get all user ids that have liked a target object
   def like_user_ids
-    @like_user_ids ||= (Likeable.redis.hkeys(like_key)||[]).map(&:to_i)
+    @like_user_ids ||= (Likeable.redis.hkeys(like_key)||[])
   end
 
   def liked_users(limit = nil)
-    @liked_users ||= Likeable.user_class.where(:id => like_user_ids)
+    @liked_users ||= Likeable.find_many(Likeable.user_class, like_user_ids)
   end
 
   def likes
@@ -90,12 +90,12 @@ module Likeable
 
     def all_liked_ids_by(user)
       key = user.like_key(self.to_s.downcase)
-      ids = (Likeable.redis.hkeys(key)||[]).map(&:to_i)
+      ids = (Likeable.redis.hkeys(key)||[])
     end
 
     def all_liked_by(user)
       ids = all_liked_ids_by(user)
-      self.where(:id => ids)
+      Likeable.find_many(self, ids)
     end
 
     def after_like(*methods)
