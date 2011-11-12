@@ -1,7 +1,6 @@
 require 'active_support/concern'
 require 'keytar'
 
-
 module Likeable
   extend ActiveSupport::Concern
 
@@ -107,6 +106,10 @@ module Likeable
       end
     end
   end
+
+  autoload :DefaultAdapter , "likeable/adapters/default_adapter"
+  autoload :MongoidAdapter , "likeable/adapters/mongoid_adapter"
+  autoload :OhmAdapter     , "likeable/adapters/ohm_adapter"
 end
 
 require 'likeable/like'

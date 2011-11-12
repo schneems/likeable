@@ -39,6 +39,10 @@ def reload_user!
   build_user!
 end
 
+def default_adapter!
+  Likeable.adapter = Likeable::DefaultAdapter
+end
+
 build_user!
 
 
