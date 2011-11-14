@@ -31,26 +31,6 @@ describe Likeable do
         @target = SetupCleanTestClassForLikeable.new
       end
 
-      it "adds Likeable::UserMethods to the class" do
-        describe User.ancestors do
-          it {should_not include Likeable::UserMethods}
-        end
-        Likeable.setup
-        describe User.ancestors do
-          it {should include Likeable::UserMethods}
-        end
-      end
-
-      it "adds likeable to class" do
-        Likeable.setup do |like|
-          like.classes = LikeableIncludedInSetup
-        end
-
-        describe LikeableIncludedInSetup.ancestors do
-          it {should include Likeable}
-        end
-      end
-
       it "" do
         result = "foo"
         Likeable.setup

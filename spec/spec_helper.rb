@@ -6,9 +6,13 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '../..', 'lib'))
 
 
+require 'likeable'
+
+
 def build_user!
   eval %Q{
       class User
+        include Likeable::UserMethods
         def id
           @time ||= Time.now.to_f.to_s
         end
@@ -37,7 +41,6 @@ end
 
 build_user!
 
-require 'likeable'
 
 require 'rspec'
 require 'rspec/autorun'

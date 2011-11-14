@@ -117,20 +117,8 @@ module Likeable
         end
       end
 
-      def make_classes_likeable
-        classes.each do |klass|
-          include_in_class(klass, Likeable)
-        end
-      end
-
-      def give_users_like_ability
-        include_in_class user_class, ::Likeable::UserMethods if user_class
-      end
-
       def setup(&block)
         yield self unless block.blank?
-        make_classes_likeable
-        give_users_like_ability
         true
       end
     end
