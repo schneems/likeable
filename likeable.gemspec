@@ -23,7 +23,6 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "autotest/discover.rb",
-    "lib/.DS_Store",
     "lib/likeable.rb",
     "lib/likeable/facepile.rb",
     "lib/likeable/like.rb",
