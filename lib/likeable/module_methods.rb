@@ -84,12 +84,16 @@ module Likeable
       end
 
       def user_class
-        @user_class ||= ::User
+        begin
+          @user_class ||= ::User
+        rescue NameError
+          nil
+        end
       end
 
-      def user_class=(user)
-        raise "User must be a class #{user.inspect}" unless user.class == Class
-        @user_class = user
+      def user_class=(klass)
+        raise ArgumentError, "Argument must be a class" unless klass.is_a?(Class)
+        @user_class = klass
       end
 
       # Likeable.setup do |like|
@@ -120,7 +124,7 @@ module Likeable
       end
 
       def give_users_like_ability
-        include_in_class user_class, ::Likeable::UserMethods
+        include_in_class user_class, ::Likeable::UserMethods if user_class
       end
 
       def setup(&block)

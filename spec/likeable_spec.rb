@@ -54,6 +54,14 @@ describe Likeable do
       end
     end
 
+    describe "#liked_users" do
+      it "finds the users that like it" do
+        @target.should_receive(:like_user_ids).and_return([1,2])
+        User.should_receive(:where).with(:id => [1,2])
+        @target.liked_users(@user)
+      end
+    end
+
     describe "#likes" do
       it "returns set of likes" do
         Likeable.redis.should_receive(:hkeys).with("like_key").once
