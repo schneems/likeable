@@ -139,9 +139,11 @@ Then in any view you can simply call the helper methods to give your user a link
 
 ```
 
+Why
+===
 
+We chose Redis because it is screaming fast, and very simple to work with. By using redis for likeable we take load off of our relational database and speed up individual calls retrieve information about the "liked" state of an object. If you're not using redis in production, and don't want to, there are many other great liking/voting libraries out there such as [thumbs up](https://github.com/brady8/thumbs_up).
 
-Thats about it.
 
                RedisRed            RedisRedi
             RedisRedisRedi       RedisRedisRedisR
