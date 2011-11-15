@@ -67,9 +67,9 @@ module Likeable
       end
 
       def adapter=(adapter)
+        self.find_one  = adapter.find_one
+        self.find_many = adapter.find_many
         @adapter = adapter
-        self.find_one  = @adapter.find_one
-        self.find_many = @adapter.find_many
       end
 
       def cast_id(id)
