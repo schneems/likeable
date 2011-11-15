@@ -72,7 +72,7 @@ RSpec.configure do |config|
 
   config.before(:each) do
     default_adapter!
-    $redis_test_connection.flushall
+    $redis_test_connection.flushdb
     Redis.stub(:new).and_return($redis_test_connection)
   end
 
