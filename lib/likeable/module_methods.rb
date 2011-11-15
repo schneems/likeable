@@ -64,6 +64,12 @@ module Likeable
         @after_like
       end
 
+      def after_unlike(&block)
+        @after_unlike = block if block.present?
+        @after_unlike ||= lambda {|unlike|}
+        @after_unlike
+      end
+
       def find_many=(find_many)
         @find_many = find_many
       end
