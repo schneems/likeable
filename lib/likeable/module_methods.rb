@@ -8,6 +8,8 @@ module Likeable
   ### Module Methods ###
   # ------------------ #
   class << self
+    attr_writer :cast_id, :find_one, :find_many
+
     def classes
       (@classes||[]).flatten
     end
@@ -65,12 +67,18 @@ module Likeable
       end
 
       def adapter=(adapter)
-        self.find_one  = adapter.find_one
-        self.find_many = adapter.find_many
+        @adapter = adapter
+        self.find_one  = @adapter.find_one
+        self.find_many = @adapter.find_many
       end
 
-      def find_many=(find_many)
-        @find_many = find_many
+      def cast_id(id)
+        @cast_id ||= if @adapter && @adapter.respond_to?(:cast_id)
+          @adapter.cast_id
+        else
+          DefaultAdapter.cast_id
+        end
+        @cast_id.call(id)
       end
 
       def find_many(klass, ids)
@@ -81,10 +89,6 @@ module Likeable
       def find_one(klass, id)
         @find_one ||= DefaultAdapter.find_one
         @find_one.call(klass, id)
-      end
-
-      def find_one=(find_one)
-        @find_one = find_one
       end
 
       def user_class
