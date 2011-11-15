@@ -54,7 +54,7 @@ module Likeable
 
   # get all user ids that have liked a target object
   def like_user_ids
-    @like_user_ids ||= (Likeable.redis.hkeys(like_key)||[])
+    @like_user_ids ||= (Likeable.redis.hkeys(like_key)||[]).map {|id| Likeable.cast_id(id)}
   end
 
   def liked_users(limit = nil)
@@ -72,7 +72,7 @@ module Likeable
   # did given user like the object
   def liked_by?(user)
     return false unless user
-    liked_by =    @like_user_ids.include?(user.id) if @like_user_ids
+    liked_by =    @like_user_ids.include?(Likeable.cast_id(user.id)) if @like_user_ids
     liked_by ||=  Likeable.redis.hexists(like_key, user.id)
   end
 
@@ -90,7 +90,7 @@ module Likeable
 
     def all_liked_ids_by(user)
       key = user.like_key(self.to_s.downcase)
-      ids = (Likeable.redis.hkeys(key)||[])
+      ids = (Likeable.redis.hkeys(key)||[]).map {|id| Likeable.cast_id(id)}
     end
 
     def all_liked_by(user)
