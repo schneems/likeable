@@ -15,13 +15,9 @@ class CleanTestClassForLikeable
   end
 end
 
-
-
-
 Likeable.setup do |like|
   like.find_one = lambda {|klass, id| klass.where(:id => id)}
 end
-
 
 describe Likeable do
 
@@ -56,9 +52,21 @@ describe Likeable do
 
     describe "#liked_users" do
       it "finds the users that like it" do
-        @target.should_receive(:like_user_ids).and_return([1,2])
-        User.should_receive(:where).with(:id => [1,2])
-        @target.liked_users(@user)
+        user1 = User.new :name => "user1"
+        user2 = User.new :name => "user2"
+        user1.like! @target
+        user2.like! @target
+        User.should_receive(:where).with(:id => [user1.id, user2.id]).and_return([user1, user2])
+        @target.liked_users.should =~ [user1, user2]
+      end
+
+      it "supports user id models where the id is a hash string" do
+        Likeable.cast_id = lambda { |id| id.to_s }
+        user_id = "ce7961bd9ca9de6753b6e04754c1c615"
+        @user.should_receive(:id).at_least(:once).and_return(user_id)
+        @user.like! @target
+        User.should_receive(:where).with(:id => [user_id]).and_return([@user])
+        @target.liked_users.should =~ [@user]
       end
     end
 
@@ -71,8 +79,17 @@ describe Likeable do
 
     describe "#liked_by?" do
       it "will answer if current user likes target" do
-        Likeable.redis.should_receive(:hexists).with("like_key", @user.id).once
-        @target.liked_by?(@user)
+        @target.should_not be_liked_by(@user)
+        @user.like! @target
+        @target.should be_liked_by(@user)
+      end
+
+      it "works with hash string based user ids" do
+        user_id = "fa7961bd9ca9de6753b6e04754c1c615"
+        @user.should_receive(:id).at_least(:once).and_return(user_id)
+        @target.should_not be_liked_by(@user)
+        @user.like! @target
+        @target.should be_liked_by(@user)
       end
     end
 
