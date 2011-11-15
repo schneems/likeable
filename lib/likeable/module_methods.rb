@@ -100,23 +100,7 @@ module Likeable
       #  like.redis     = Redis.new(#...)
       #  like.find_one  = lambda {|klass, id | klass.where(:id => id)}
       #  like.find_many = lambda {|klass, ids| klass.where(:id => ids)}
-      #  like.classes   = Spot, Comment
       # end
-
-
-      def include_in_class(klass, include_item)
-        case
-        when defined?(Rails::Application)
-          Rails::Application.class_eval do
-            config.to_prepare do
-              klass.send :include, include_item
-            end
-          end
-        else
-          klass.send :include, include_item
-        end
-      end
-
       def setup(&block)
         yield self unless block.blank?
         true
