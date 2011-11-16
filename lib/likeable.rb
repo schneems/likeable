@@ -9,13 +9,13 @@ module Likeable
     include Keytar
     include Likeable::Facepile
     define_key :like, :key_case => nil
-    define_key :unlike, :key_case => nil
+    define_key :dislike, :key_case => nil
 
     if self.respond_to?(:after_destroy)
       after_destroy :destroy_all_likes
-      after_destroy :destroy_all_unlikes
+      after_destroy :destroy_all_dislikes
     else
-      warn "#{self} doesn't support after_destroy callback, likes and/or unlikes will not be cleared automatically when object is destroyed"
+      warn "#{self} doesn't support after_destroy callback, likes and/or dislikes will not be cleared automatically when object is destroyed"
     end
   end
 
@@ -23,8 +23,8 @@ module Likeable
     liked_users.each {|user| self.remove_like_from(user) }
   end
 
-  def destroy_all_unlikes
-    unliked_users.each {|user| self.remove_unlike_from(user) }
+  def destroy_all_dislikes
+    disliked_users.each {|user| self.remove_dislike_from(user) }
   end
 
   # create a like
@@ -38,15 +38,15 @@ module Likeable
     like
   end
 
-  # create an unlike
-  # the user who created the unlike has a reference to the object unliked
-  def add_unlike_from(user, time = Time.now.to_f)
-    Likeable.redis.hset(unlike_key, user.id, time)
-    Likeable.redis.hset(user.unlike_key(self.class.to_s.downcase), self.id, time)
-    unlike = Unlike.new(:target => self, :user => user, :time => time)
-    after_unlike(unlike)
-    clear_memoized_methods(:unlike_count, :unlike_user_ids, :unliked_user_ids, :unliked_users, :unlikes)
-    unlike
+  # create an dislike
+  # the user who created the dislike has a reference to the object disliked
+  def add_dislike_from(user, time = Time.now.to_f)
+    Likeable.redis.hset(dislike_key, user.id, time)
+    Likeable.redis.hset(user.dislike_key(self.class.to_s.downcase), self.id, time)
+    dislike = Dislike.new(:target => self, :user => user, :time => time)
+    after_dislike(dislike)
+    clear_memoized_methods(:dislike_count, :dislike_user_ids, :disliked_user_ids, :disliked_users, :dislikes)
+    dislike
   end
 
   def clear_memoized_methods(*methods)
@@ -59,8 +59,8 @@ module Likeable
     Likeable.after_like.call(like)
   end
 
-  def after_unlike(unlike)
-    Likeable.after_unlike.call(unlike)
+  def after_dislike(dislike)
+    Likeable.after_dislike.call(dislike)
   end
 
   # removes a like
@@ -70,23 +70,23 @@ module Likeable
     clear_memoized_methods(:like_count, :like_user_ids, :liked_user_ids, :liked_users)
   end
 
-  # removes an unlike
-  def remove_unlike_from(user)
-    Likeable.redis.hdel(unlike_key, user.id)
-    Likeable.redis.hdel(user.unlike_key(self.class.to_s.downcase), self.id)
-    clear_memoized_methods(:unlike_count, :unlike_user_ids, :unliked_user_ids, :unliked_users)
+  # removes a dislike
+  def remove_dislike_from(user)
+    Likeable.redis.hdel(dislike_key, user.id)
+    Likeable.redis.hdel(user.dislike_key(self.class.to_s.downcase), self.id)
+    clear_memoized_methods(:dislike_count, :dislike_user_ids, :disliked_user_ids, :disliked_users)
   end
 
   def like_count
     @like_count ||= @like_user_ids.try(:count) || @likes.try(:count) || Likeable.redis.hlen(like_key)
   end
 
-  def unlike_count
-    @unlike_count ||= @unlike_user_ids.try(:count) || @unlikes.try(:count) || Likeable.redis.hlen(unlike_key)
+  def dislike_count
+    @dislike_count ||= @dislike_user_ids.try(:count) || @dislikes.try(:count) || Likeable.redis.hlen(dislike_key)
   end
 
   def plusminus
-    like_count - unlike_count
+    like_count - dislike_count
   end
 
   # get all user ids that have liked a target object
@@ -94,16 +94,16 @@ module Likeable
     @like_user_ids ||= (Likeable.redis.hkeys(like_key)||[]).map(&:to_i)
   end
 
-  def unlike_user_ids
-    @unlike_user_ids ||= (Likeable.redis.hkeys(unlike_key)||[]).map(&:to_i)
+  def dislike_user_ids
+    @dislike_user_ids ||= (Likeable.redis.hkeys(dislike_key)||[]).map(&:to_i)
   end
 
   def liked_users(limit = nil)
     @liked_users ||= Likeable.user_class.where(:id => like_user_ids)
   end
 
-  def unliked_users(limit = nil)
-    @unliked_users ||= User.where(:id => unlike_user_ids)
+  def disliked_users(limit = nil)
+    @disliked_users ||= Likeable.user_class.where(:id => dislike_user_ids)
   end
 
   def likes
@@ -114,10 +114,10 @@ module Likeable
     end
   end
 
-  def unlikes
-    @unlikes ||= begin
-      Likeable.redis.hgetall(unlike_key).collect do |user_id, time|
-        Unlike.new(:user_id => user_id, :time => time, :target => self)
+  def dislikes
+    @dislikes ||= begin
+      Likeable.redis.hgetall(dislike_key).collect do |user_id, time|
+        Dislike.new(:user_id => user_id, :time => time, :target => self)
       end
     end
   end
@@ -129,10 +129,10 @@ module Likeable
     liked_by ||=  Likeable.redis.hexists(like_key, user.id)
   end
 
-  def unliked_by?(user)
+  def disliked_by?(user)
     return false unless user
-    unliked_by =    @unlike_user_ids.include?(user.id) if @unlike_user_ids
-    unliked_by ||=  Likeable.redis.hexists(unlike_key, user.id)
+    disliked_by =    @dislike_user_ids.include?(user.id) if @dislike_user_ids
+    disliked_by ||=  Likeable.redis.hexists(dislike_key, user.id)
   end
 
 
@@ -152,8 +152,8 @@ module Likeable
       ids = (Likeable.redis.hkeys(key)||[]).map(&:to_i)
     end
 
-    def all_unliked_ids_by(user)
-      key = user.unlike_key(self.to_s.downcase)
+    def all_disliked_ids_by(user)
+      key = user.dislike_key(self.to_s.downcase)
       ids = (Likeable.redis.hkeys(key)||[]).map(&:to_i)
     end
 
@@ -162,8 +162,8 @@ module Likeable
       self.where(:id => ids)
     end
     
-    def all_unliked_by(user)
-      ids = all_unliked_ids_by(user)
+    def all_disliked_by(user)
+      ids = all_disliked_ids_by(user)
       self.where(:id => ids)
     end
 
@@ -175,10 +175,10 @@ module Likeable
       end
     end
     
-    def after_unlike(*methods)
-      define_method(:after_unlike) do |unlike|
+    def after_dislike(*methods)
+      define_method(:after_dislike) do |dislike|
         methods.each do |method|
-          eval("#{method}(unlike)")
+          eval("#{method}(dislike)")
         end
       end
     end
@@ -186,7 +186,7 @@ module Likeable
 end
 
 require 'likeable/like'
-require 'likeable/unlike'
+require 'likeable/dislike'
 require 'likeable/facepile'
 require 'likeable/user_methods'
 require 'likeable/module_methods'

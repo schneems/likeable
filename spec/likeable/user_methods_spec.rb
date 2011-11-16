@@ -31,10 +31,10 @@ describe Likeable::UserMethods do
     end
   end
 
-  describe '#unlike!' do
+  describe '#cancel_like!' do
     it "calls remove_like_from in target" do
       @target.should_receive(:remove_like_from).with(@user)
-      @user.unlike! @target
+      @user.cancel_like! @target
     end
   end
 

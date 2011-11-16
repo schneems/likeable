@@ -1,13 +1,13 @@
 require 'digest/sha1'
 
-class Likeable::Unlike
-  attr_accessor :created_at, :target, :unlike_user, :user_id
+class Likeable::Dislike
+  attr_accessor :created_at, :target, :dislike_user, :user_id
 
   def initialize(options = {})
-    self.created_at = Time.at(options[:time].try(:to_f)||Time.now)
-    self.target     = options[:target]
-    self.user_id    = options[:user].try(:id) || options[:user_id]
-    self.unlike_user  = options[:user]
+    self.created_at    = Time.at(options[:time].try(:to_f)||Time.now)
+    self.target        = options[:target]
+    self.user_id       = options[:user].try(:id) || options[:user_id]
+    self.dislike_user  = options[:user]
   end
 
   def id
@@ -15,7 +15,7 @@ class Likeable::Unlike
   end
 
   def user
-    @user ||= unlike_user
+    @user ||= dislike_user
     @user ||= Likeable.find_one(User, user_id)
     @user
   end
