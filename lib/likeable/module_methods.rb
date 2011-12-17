@@ -75,7 +75,7 @@ module Likeable
 
 
       def find_one(klass, id)
-        @find_one ||= lambda {|klass, ids| klass.where(:id => id).first}
+        @find_one ||= lambda {|klass, id| klass.where(:id => id).first}
         @find_one.call(klass, id)
       end
 
