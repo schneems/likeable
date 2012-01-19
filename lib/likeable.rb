@@ -1,7 +1,6 @@
 require 'active_support/concern'
 require 'keytar'
 
-
 module Likeable
   extend ActiveSupport::Concern
 
@@ -55,11 +54,11 @@ module Likeable
 
   # get all user ids that have liked a target object
   def like_user_ids
-    @like_user_ids ||= (Likeable.redis.hkeys(like_key)||[]).map(&:to_i)
+    @like_user_ids ||= (Likeable.redis.hkeys(like_key)||[]).map {|id| Likeable.cast_id(id)}
   end
 
   def liked_users(limit = nil)
-    @liked_users ||= Likeable.user_class.where(:id => like_user_ids)
+    @liked_users ||= Likeable.find_many(Likeable.user_class, like_user_ids)
   end
 
   def likes
@@ -73,7 +72,7 @@ module Likeable
   # did given user like the object
   def liked_by?(user)
     return false unless user
-    liked_by =    @like_user_ids.include?(user.id) if @like_user_ids
+    liked_by =    @like_user_ids.include?(Likeable.cast_id(user.id)) if @like_user_ids
     liked_by ||=  Likeable.redis.hexists(like_key, user.id)
   end
 
@@ -91,12 +90,12 @@ module Likeable
 
     def all_liked_ids_by(user)
       key = user.like_key(self.to_s.downcase)
-      ids = (Likeable.redis.hkeys(key)||[]).map(&:to_i)
+      ids = (Likeable.redis.hkeys(key)||[]).map {|id| Likeable.cast_id(id)}
     end
 
     def all_liked_by(user)
       ids = all_liked_ids_by(user)
-      self.where(:id => ids)
+      Likeable.find_many(self, ids)
     end
 
     def after_like(*methods)
@@ -107,6 +106,10 @@ module Likeable
       end
     end
   end
+
+  autoload :DefaultAdapter , "likeable/adapters/default_adapter"
+  autoload :MongoidAdapter , "likeable/adapters/mongoid_adapter"
+  autoload :OhmAdapter     , "likeable/adapters/ohm_adapter"
 end
 
 require 'likeable/like'
