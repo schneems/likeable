@@ -43,10 +43,12 @@ module Likeable
 
   # removes a like
   def remove_like_from(user)
-    Likeable.redis.hdel(like_key, user.id)
-    Likeable.redis.hdel(user.like_key(self.class.to_s.downcase), self.id)
-    after_unlike(user)
-    clear_memoized_methods(:like_count, :like_user_ids, :liked_user_ids, :liked_users)
+    if Likeable.redis.hexists(like_key, user.id)
+      Likeable.redis.hdel(like_key, user.id)
+      Likeable.redis.hdel(user.like_key(self.class.to_s.downcase), self.id)
+      after_unlike(user)
+      clear_memoized_methods(:like_count, :like_user_ids, :liked_user_ids, :liked_users)
+    end
   end
 
   def after_unlike(user)
