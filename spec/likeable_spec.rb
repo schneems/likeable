@@ -123,6 +123,17 @@ describe Likeable do
         @target.add_like_from(@user)
       end
     end
+
+    describe 'after_unlike' do
+      it 'should be a class method when included' do
+        CleanTestClassForLikeable.respond_to?(:after_unlike).should be_true
+      end
+      it 'is called after a like is destroyed' do
+        CleanTestClassForLikeable.after_unlike(:foo)
+        @target.should_receive(:foo)
+        @target.remove_like_from(@user)
+      end
+    end
   end
 
 end
