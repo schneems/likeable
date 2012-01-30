@@ -43,9 +43,17 @@ describe Likeable do
       it "removes a like" do
         target_class = @target.class.to_s.downcase
         user_like_key = "users:like:#{@user.id}:#{target_class}"
+        Likeable.redis.should_receive(:hexists).with("like_key", @user.id).and_return(true)
         @user.should_receive(:like_key).with(target_class).and_return(user_like_key)
         Likeable.redis.should_receive(:hdel).with("like_key", @user.id).once
         Likeable.redis.should_receive(:hdel).with(user_like_key, @target.id)
+        @target.remove_like_from(@user)
+      end
+
+      it "doesn't call after_unlike if like didn't exist" do
+        CleanTestClassForLikeable.after_unlike(:foo)
+        @target = CleanTestClassForLikeable.new
+        @target.should_not_receive(:foo)
         @target.remove_like_from(@user)
       end
     end
@@ -121,6 +129,18 @@ describe Likeable do
         CleanTestClassForLikeable.after_like(:foo)
         @target.should_receive(:foo)
         @target.add_like_from(@user)
+      end
+    end
+
+    describe 'after_unlike' do
+      it 'should be a class method when included' do
+        CleanTestClassForLikeable.respond_to?(:after_unlike).should be_true
+      end
+      it 'is called after a like is destroyed' do
+        CleanTestClassForLikeable.after_unlike(:foo)
+        Likeable.redis.should_receive(:hexists).and_return(true)
+        @target.should_receive(:foo)
+        @target.remove_like_from(@user)
       end
     end
   end
