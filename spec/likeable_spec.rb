@@ -33,10 +33,21 @@ describe Likeable do
         user_like_key = "users:like:#{@user.id}:#{target_class}"
         time = Time.now.to_f
         @user.should_receive(:like_key).with(target_class).and_return(user_like_key)
-        Likeable.redis.should_receive(:hset).with("like_key", @user.id, time).once
+        Likeable.redis.should_receive(:hsetnx).with("like_key", @user.id, time).once.and_return(true)
         Likeable.redis.should_receive(:hset).with(user_like_key, @target.id, time).once
         @target.add_like_from(@user, time)
       end
+      
+      it "doesn't create like twice" do
+        @target.add_like_from(@user, Time.now.to_f)
+        time = Time.now.to_f
+        target_class = @target.class.to_s.downcase
+        user_like_key = "users:like:#{@user.id}:#{target_class}"
+        Likeable.redis.should_receive(:hsetnx).with("like_key", @user.id, time).once.and_return(false)
+        Likeable.redis.should_receive(:hget).with("like_key", @user.id).once
+        Likeable.redis.should_not_receive(:hset).with("like_key", @user.id)
+        @target.add_like_from(@user, time)
+      end      
     end
 
     describe "#remove_like_from" do

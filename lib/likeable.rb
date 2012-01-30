@@ -23,12 +23,16 @@ module Likeable
   # create a like
   # the user who created the like has a reference to the object liked
   def add_like_from(user, time = Time.now.to_f)
-    Likeable.redis.hset(like_key, user.id, time)
-    Likeable.redis.hset(user.like_key(self.class.to_s.downcase), self.id, time)
-    like = Like.new(:target => self, :user => user, :time => time)
-    after_like(like)
-    clear_memoized_methods(:like_count, :like_user_ids, :liked_user_ids, :liked_users, :likes)
-    like
+    if Likeable.redis.hsetnx(like_key, user.id, time)
+      Likeable.redis.hset(user.like_key(self.class.to_s.downcase), self.id, time)
+      like = Like.new(:target => self, :user => user, :time => time)
+      after_like(like)
+      clear_memoized_methods(:like_count, :like_user_ids, :liked_user_ids, :liked_users, :likes)
+      like
+    else
+      time = Likeable.redis.hget(like_key, user.id)
+      Like.new(:user_id => user.id, :time => time, :target => self)
+    end
   end
 
   def clear_memoized_methods(*methods)
