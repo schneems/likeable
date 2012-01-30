@@ -45,7 +45,12 @@ module Likeable
   def remove_like_from(user)
     Likeable.redis.hdel(like_key, user.id)
     Likeable.redis.hdel(user.like_key(self.class.to_s.downcase), self.id)
+    after_unlike(user)
     clear_memoized_methods(:like_count, :like_user_ids, :liked_user_ids, :liked_users)
+  end
+
+  def after_unlike(user)
+    Likeable.after_unlike.call(user)
   end
 
   def like_count
@@ -86,6 +91,8 @@ module Likeable
   # ----------------- #
   # allows us to setup callbacks when creating likes
   # after_like :notify_users
+  # allows us to setup callbacks when destroying likes
+  # after_unlike :notify_users
   module ClassMethods
 
     def all_liked_ids_by(user)
@@ -102,6 +109,14 @@ module Likeable
       define_method(:after_like) do |like|
         methods.each do |method|
           eval("#{method}(like)")
+        end
+      end
+    end
+
+    def after_unlike(*methods)
+      define_method(:after_unlike) do |user|
+        methods.each do |method|
+          eval("#{method}(user)")
         end
       end
     end
