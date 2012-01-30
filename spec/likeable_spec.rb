@@ -7,7 +7,7 @@ class CleanTestClassForLikeable
 
   def to_hash(*args); {} end
 
-  def foo
+  def foo(o)
   end
 
   def id
@@ -38,15 +38,12 @@ describe Likeable do
         @target.add_like_from(@user, time)
       end
       
-      it "doesn't create like twice" do
-        @target.add_like_from(@user, Time.now.to_f)
-        time = Time.now.to_f
-        target_class = @target.class.to_s.downcase
-        user_like_key = "users:like:#{@user.id}:#{target_class}"
-        Likeable.redis.should_receive(:hsetnx).with("like_key", @user.id, time).once.and_return(false)
-        Likeable.redis.should_receive(:hget).with("like_key", @user.id).once
-        Likeable.redis.should_not_receive(:hset).with("like_key", @user.id)
-        @target.add_like_from(@user, time)
+      it "doesn't call after_like if like already exists" do
+        Likeable.redis.should_receive(:hsetnx).and_return(false)
+        CleanTestClassForLikeable.after_like(:foo)
+        @target = CleanTestClassForLikeable.new
+        @target.should_not_receive(:foo)
+        @target.add_like_from(@user)
       end      
     end
 
