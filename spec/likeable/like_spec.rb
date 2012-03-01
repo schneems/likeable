@@ -2,6 +2,7 @@ require 'spec_helper'
 describe Likeable::Like do
   before do
     @time = Time.now
+    @user = User.new
   end
   describe 'attributes' do
     it 'stores target, user, and created_at' do

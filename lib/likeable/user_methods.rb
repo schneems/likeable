@@ -10,15 +10,15 @@ module Likeable::UserMethods
   # Add a like to an object
   # if already disliked, remove the dislike and add a like.
   def like!(obj)
-    obj.remove_dislike_from(self)
     obj.add_like_from(self)
+    obj.remove_dislike_from(self) if obj.disliked_by?(self)
   end
 
   # Add a Dislike to an object
   # if already liked, remove the like and add a dislike.
   def dislike!(obj)
-    obj.remove_like_from(self)
     obj.add_dislike_from(self)
+    obj.remove_like_from(self) if obj.liked_by?(self)
   end
 
   # Remove both like or dislike by the Likeable.user_class
@@ -26,6 +26,7 @@ module Likeable::UserMethods
     obj.remove_like_from(self)
     obj.remove_dislike_from(self)
   end
+  alias :unlike! :cancel_like!
 
   def like?(obj)
     obj.liked_by?(self)

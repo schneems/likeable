@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "likeable"
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Schneems"]
-  s.date = "2011-11-15"
+  s.date = "2011-12-17"
   s.description = "\n    Likeable allows you to make your models...well...likeable using redis.\n  "
   s.email = "richard.schneeman@gmail.com"
   s.extra_rdoc_files = [
@@ -24,12 +24,17 @@ Gem::Specification.new do |s|
     "VERSION",
     "autotest/discover.rb",
     "lib/likeable.rb",
+    "lib/likeable/adapters/default_adapter.rb",
+    "lib/likeable/adapters/mongoid_adapter.rb",
+    "lib/likeable/adapters/ohm_adapter.rb",
     "lib/likeable/facepile.rb",
     "lib/likeable/like.rb",
     "lib/likeable/module_methods.rb",
     "lib/likeable/user_methods.rb",
     "license.txt",
     "likeable.gemspec",
+    "spec/likeable/adapters/mongoid_adapter_spec.rb",
+    "spec/likeable/adapters/ohm_adapter_spec.rb",
     "spec/likeable/facepile_spec.rb",
     "spec/likeable/like_spec.rb",
     "spec/likeable/module_methods_spec.rb",
@@ -41,9 +46,11 @@ Gem::Specification.new do |s|
   s.homepage = "https://github.com/schneems/Likeable"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.10"
+  s.rubygems_version = "1.8.11"
   s.summary = "Like ruby objects backed by redis"
   s.test_files = [
+    "spec/likeable/adapters/mongoid_adapter_spec.rb",
+    "spec/likeable/adapters/ohm_adapter_spec.rb",
     "spec/likeable/facepile_spec.rb",
     "spec/likeable/like_spec.rb",
     "spec/likeable/module_methods_spec.rb",

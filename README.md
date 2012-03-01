@@ -139,7 +139,7 @@ If you're using Likeable in Rails this should help you get started
       redirect_to :back, :notice => 'successfully disliked'
     end
 
-    def destroy
+    def cancel_like
       target = Likeable.find_by_resource_id(params[:resource_name], params[:resource_id])
       current_user.cancel_like!(target)
       redirect_to :back, :notice => 'successfully canceled'
@@ -152,9 +152,9 @@ config/routes.rb
 
 ```ruby
 
-    post    'likes/:resource_name/:resource_id' => "likes#create_like",    :as => :like
-    post    'likes/:resource_name/:resource_id' => "likes#create_dislike", :as => :dislike
-    delete  'likes/:resource_name/:resource_id' => "likes#destroy",        :as => :cancel_like
+    match 'likes/:resource_name/:resource_id/like' => "likes#create_like",       :as => :like
+    match 'likes/:resource_name/:resource_id/dislike' => "likes#create_dislike", :as => :dislike
+    match 'likes/:resource_name/:resource_id/cancel' => "likes#cancel_like",         :as => :cancel_like
 
 ```
 
@@ -163,15 +163,15 @@ helpers/like_helper.rb
 ```ruby
 
     def like_link_for(target)
-      link_to "like it!", like_path(:resource_name => target.class, :resource_id => target.id), :method => :post
+      link_to "like it!", like_path(:resource_name => target.class, :resource_id => target.id)
     end
 
     def dislike_link_for(target)
-      link_to "dislike it!", dislike_path(:resource_name => target.class, :resource_id => target.id), :method => :post
+      link_to "dislike it!", dislike_path(:resource_name => target.class, :resource_id => target.id)
     end
 
-    def cancel_like_link_for
-      link_to "cancel like!", cancel_like_path(:resource_name => target.class, :resource_id => target.id), :method => :delete
+    def cancel_like_link_for(target)
+      link_to "cancel like!", cancel_like_path(:resource_name => target.class, :resource_id => target.id)
     end
 
 ```
