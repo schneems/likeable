@@ -1,13 +1,10 @@
 require 'rubygems'
 require 'active_record'
 
-
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '../..', 'lib'))
 
-
 require 'likeable'
-
 
 def build_user!
   eval %Q{
@@ -45,6 +42,19 @@ end
 
 build_user!
 
+class NullRedis < BasicObject
+
+  def method_missing(*args)
+    self
+  end
+
+  def to_s
+    "Null Redis"
+  end
+
+end
+
+Likeable.redis = NullRedis.new
 
 require 'tempfile'
 require 'rspec'
