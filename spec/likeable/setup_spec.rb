@@ -1,26 +1,6 @@
 require 'spec_helper'
 
 
-class LikeableIncludedInSetup
-
-end
-
-class SetupCleanTestClassForLikeable
-  include Likeable
-  def like_key
-    "like_key"
-  end
-
-  def to_hash(*args); {} end
-
-  def foo
-  end
-
-  def id
-    @id ||= rand(100)
-  end
-end
-
 describe Likeable do
   describe "setup" do
     context "when the User class is defined" do
@@ -28,7 +8,7 @@ describe Likeable do
         reload_user!
         Likeable.user_class = User
         @user   = User.new
-        @target = SetupCleanTestClassForLikeable.new
+        @target = CleanTestClassForLikeable.new
       end
 
       it "" do
