@@ -16,7 +16,7 @@ class Likeable::Like
 
   def user
     @user ||= like_user
-    @user ||= Likeable.find_one(User, user_id)
+    @user ||= Likeable.find_one(Likeable.user_class, user_id)
     @user
   end
 
