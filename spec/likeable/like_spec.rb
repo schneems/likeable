@@ -18,4 +18,17 @@ describe Likeable::Like do
       like.created_at.should be_within(1).of(@time)
     end
   end
+  describe "#user" do
+    it "returns like_user if available" do
+      like = Likeable::Like.new(:target => @target, :user => @user, :time => @time)
+      like.user.should == @user
+    end
+    it "finds the user in the Likeable::user_model if the like was initialized without a user" do
+      like = Likeable::Like.new(:target => @target, :user => nil, :user_id => 100, :time => @time)
+      Account = stub()
+      Likeable.stub(:user_class).and_return(Account)
+      Likeable.should_receive(:find_one).with(Account, 100)
+      like.user
+    end
+  end
 end
