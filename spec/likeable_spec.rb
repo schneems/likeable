@@ -7,7 +7,7 @@ class CleanTestClassForLikeable
 
   def to_hash(*args); {} end
 
-  def foo
+  def foo(o)
   end
 
   def id
@@ -33,10 +33,18 @@ describe Likeable do
         user_like_key = "users:like:#{@user.id}:#{target_class}"
         time = Time.now.to_f
         @user.should_receive(:like_key).with(target_class).and_return(user_like_key)
-        Likeable.redis.should_receive(:hset).with("like_key", @user.id, time).once
+        Likeable.redis.should_receive(:hsetnx).with("like_key", @user.id, time).once.and_return(true)
         Likeable.redis.should_receive(:hset).with(user_like_key, @target.id, time).once
         @target.add_like_from(@user, time)
       end
+      
+      it "doesn't call after_like if like already exists" do
+        Likeable.redis.should_receive(:hsetnx).and_return(false)
+        CleanTestClassForLikeable.after_like(:foo)
+        @target = CleanTestClassForLikeable.new
+        @target.should_not_receive(:foo)
+        @target.add_like_from(@user)
+      end      
     end
 
     describe "#remove_like_from" do
