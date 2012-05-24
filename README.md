@@ -42,7 +42,7 @@ Likeable will allow your models to be liked by users, just drop a few lines of c
 
 ```
 
-If you're considering likeable check out [opinions](https://github.com/leehambley/opinions) it is a bit more flexible.
+This library doesn't do dislikes, if you want something with more flexibility check out  [opinions](https://github.com/leehambley/opinions).
 
 ## Screencast
 

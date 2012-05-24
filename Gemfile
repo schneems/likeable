@@ -7,7 +7,7 @@ source 'http://rubygems.org'
 group :development, :test do
   gem 'activerecord', '~>3.0.4' ## not needed if you're just using KeyBuilder
   gem 'rake', '~>0.8.7'
-  gem 'jeweler', '~>1.5.2'
+  gem 'jeweler'
   gem "autotest-standalone"
   gem "autotest-growl"
 end
