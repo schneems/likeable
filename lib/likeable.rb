@@ -80,7 +80,7 @@ module Likeable
   def liked_by?(user)
     return false unless user
     liked_by =    @like_user_ids.include?(Likeable.cast_id(user.id)) if @like_user_ids
-    liked_by ||=  Likeable.redis.hexists(like_key, user.id)
+    liked_by ||=  true & Likeable.redis.hexists(like_key, user.id)
   end
 
 
