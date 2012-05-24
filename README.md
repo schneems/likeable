@@ -41,6 +41,45 @@ Likeable will allow your models to be liked by users, just drop a few lines of c
     liked_comment == comment            # => true
 
 ```
+And it also allow your models to be disliked by users:
+
+```ruby
+    comment = Comment.find(15)
+    comment.dislike_count                 # => 0
+    current_user.dislike!(comment)        # => #<Likeable::Dislike ... >
+    comment.dislike_count                 # => 1
+    comment.dislikes                      # => [#<Likeable::Dislike ... >]
+    comment.dislikes.last.user            # => #<User ... >
+    comment.dislikes.last.created_at      # => Thu Nov 10 06:16:14 +0200 2011
+
+    comment.disliked_by?(current_user)    # => true
+
+    current_user.all_disliked(Comment)    # => [#<Comment ...>, ...]
+
+
+    # Notice `plusminus` method that equals to (like_count - dislike_count)
+    comment = Comment.find(15)
+    comment.plusminus                     # => 0
+
+    current_user.dislike!(comment)
+    comment.plusminus                     # => -1
+    comment.disliked_by?(current_user)    # => true
+
+    current_user.like!(comment)
+    comment.plusminus                     # => 1
+    comment.liked_by?(current_user)       # => true
+
+    current_user_2.like!(comment)
+    comment.plusminus                     # => 2
+    comment.liked_by?(current_user_2)     # => true
+
+    # Notice `cancel_like!` method
+    current_user.cancel_like!(comment)
+    comment.plusminus                     # => 1
+    comment.liked_by?(current_user)       # => false
+    comment.disliked_by?(current_user)    # => false
+
+```
 
 This library doesn't do dislikes, if you want something with more flexibility check out  [opinions](https://github.com/leehambley/opinions).
 
@@ -92,16 +131,22 @@ If you're using Likeable in Rails this should help you get started
 
   class LikesController < ApplicationController
 
-    def create
+    def create_like
       target = Likeable.find_by_resource_id(params[:resource_name], params[:resource_id])
       current_user.like!(target)
-      redirect_to :back, :notice => 'success'
+      redirect_to :back, :notice => 'successfully liked'
     end
 
-    def destroy
+    def create_dislike
       target = Likeable.find_by_resource_id(params[:resource_name], params[:resource_id])
-      current_user.unlike!(target)
-      redirect_to :back, :notice => 'success'
+      current_user.dislike!(target)
+      redirect_to :back, :notice => 'successfully disliked'
+    end
+
+    def cancel_like
+      target = Likeable.find_by_resource_id(params[:resource_name], params[:resource_id])
+      current_user.cancel_like!(target)
+      redirect_to :back, :notice => 'successfully canceled'
     end
   end
 
@@ -111,8 +156,9 @@ config/routes.rb
 
 ```ruby
 
-    delete  'likes/:resource_name/:resource_id' => "likes#destroy", :as => 'like'
-    post    'likes/:resource_name/:resource_id' => "likes#create",  :as => 'like'
+    match 'likes/:resource_name/:resource_id/like' => "likes#create_like",       :as => :like
+    match 'likes/:resource_name/:resource_id/dislike' => "likes#create_dislike", :as => :dislike
+    match 'likes/:resource_name/:resource_id/cancel' => "likes#cancel_like",         :as => :cancel_like
 
 ```
 
@@ -121,11 +167,15 @@ helpers/like_helper.rb
 ```ruby
 
     def like_link_for(target)
-      link_to "like it!!", like_path(:resource_name => target  .class, :resource_id => target.id), :method => :post
+      link_to "like it!", like_path(:resource_name => target.class, :resource_id => target.id)
     end
 
-    def unlike_link_for(target)
-      link_to "unlike it!!", like_path(:resource_name => target.class, :resource_id => target.id), :method => :delete
+    def dislike_link_for(target)
+      link_to "dislike it!", dislike_path(:resource_name => target.class, :resource_id => target.id)
+    end
+
+    def cancel_like_link_for(target)
+      link_to "cancel like!", cancel_like_path(:resource_name => target.class, :resource_id => target.id)
     end
 
 ```
@@ -134,10 +184,13 @@ Then in any view you can simply call the helper methods to give your user a link
 
 ```ruby
 
-    <%- if @user.likes? @comment -%>
-      <%= unlike_link_for @comment  %>
-    <%- else -%>
-      <%= like_link_for @comment %>
+    <%- if @user.likes? @comment || @user.dislikes? @comment -%>
+      <%- if @user.likes? @comment -%>
+        <%= dislike_link_for @comment  %>
+      <%- else -%>
+        <%= like_link_for @comment %>
+      <%- end -%>
+      <%= cancel_like_link_for @comment %>
     <%- end -%>
 
 
