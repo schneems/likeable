@@ -1,9 +1,11 @@
 Use Redis to Make your Ruby objects Likeable!
 ======
 
+I no longer use this gem in production (it was written for Gowalla), if you do and want to help me maintain it, let me know [@schneems](http://twitter.com/schneems).
+
 You like this
 -------------
-Likeable is the easiest way to allow your models to be liked by users, just drop a few lines of code into your model and you're good to go.
+Likeable will allow your models to be liked by users, just drop a few lines of code into your model and you're good to go.
 
 ```ruby
 
@@ -39,6 +41,8 @@ Likeable is the easiest way to allow your models to be liked by users, just drop
     liked_comment == comment            # => true
 
 ```
+
+If you're considering likeable check out [opinions](https://github.com/leehambley/opinions) it is a bit more flexible.
 
 ## Screencast
 
