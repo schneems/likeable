@@ -116,10 +116,10 @@ config/routes.rb
 
 ```
 
-helpers/like_helper.rb
+helpers/likes_helper.rb
 
 ```ruby
-
+  module LikesHelper 
     def like_link_for(target)
       link_to "like it!!", like_path(:resource_name => target  .class, :resource_id => target.id), :method => :post
     end
@@ -127,7 +127,7 @@ helpers/like_helper.rb
     def unlike_link_for(target)
       link_to "unlike it!!", like_path(:resource_name => target.class, :resource_id => target.id), :method => :delete
     end
-
+  end
 ```
 
 Then in any view you can simply call the helper methods to give your user a link
