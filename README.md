@@ -65,12 +65,24 @@ Next set up your Redis connection in initializers/likeable.rb:
     end
 ```
 
+
+
+
 Then add the `Likeable::UserMethods` module to models/user.rb:
 
 ```ruby
 
     class User
       include Likeable::UserMethods
+    end
+```
+
+If your user class is not ::User setup user_class in initializers/likeable.rb:
+
+```ruby
+
+    Likeable.setup do |likeable|
+      likeable.user_class = Customer
     end
 ```
 
